@@ -23,11 +23,83 @@
 
   // FSM States and configuration
   type GameState = "countdown" | "rolling" | "completed";
-  const COUNTDOWN_SECONDS = 3;
-  const COMPLETED_WAIT_SECONDS = 2;
 
+  // Separate game configuration
+  const GAME_CONFIG = {
+    COUNTDOWN_SECONDS: 3,
+    COMPLETED_WAIT_SECONDS: 2,
+    ROLL_ANIMATION_DURATION: 5000,
+    ROLL_ANIMATION_CURVE: "cubic-bezier(0.05, 0.7, 0, 1)",
+    RESET_ANIMATION_DURATION: 500,
+    RESET_ANIMATION_CURVE: "linear",
+  } as const;
+
+  // Game state management
+  class GameController {
+    private static async countdown(
+      setState: (state: GameState, value?: number) => void
+    ) {
+      setState("countdown");
+      for (let i = GAME_CONFIG.COUNTDOWN_SECONDS; i > 0; i--) {
+        setState("countdown", i);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    private static getRandomSelection() {
+      const randomNumber =
+        SQUARES[Math.floor(Math.random() * SQUARES.length)].number;
+      const randomRepetition = Math.floor(Math.random() * REPETITIONS);
+      const randomOffset = (Math.random() - 0.5) * (BOX_WIDTH * 0.8);
+      return { randomNumber, randomRepetition, randomOffset };
+    }
+
+    static async runGameLoop(
+      setState: (state: GameState, value?: number) => void,
+      updateSelection: (
+        number: string,
+        repetition: string,
+        offset: number
+      ) => void,
+      resetSelection: () => void
+    ) {
+      while (true) {
+        // Countdown phase
+        await this.countdown(setState);
+
+        // Rolling phase
+        setState("rolling");
+        const { randomNumber, randomRepetition, randomOffset } =
+          this.getRandomSelection();
+        updateSelection(
+          randomNumber.toString(),
+          randomRepetition.toString(),
+          randomOffset
+        );
+
+        // Wait for roll animation
+        await new Promise((resolve) =>
+          setTimeout(resolve, GAME_CONFIG.ROLL_ANIMATION_DURATION)
+        );
+
+        // Completed phase
+        setState("completed");
+        await new Promise((resolve) =>
+          setTimeout(resolve, GAME_CONFIG.COMPLETED_WAIT_SECONDS * 1000)
+        );
+
+        // Reset phase
+        resetSelection();
+        await new Promise((resolve) =>
+          setTimeout(resolve, GAME_CONFIG.RESET_ANIMATION_DURATION)
+        );
+      }
+    }
+  }
+
+  // State management
   let gameState = $state<GameState>("countdown");
-  let countdownValue = $state(COUNTDOWN_SECONDS);
+  let countdownValue = $state<number>(GAME_CONFIG.COUNTDOWN_SECONDS);
   let selectedNumber = $state("0");
   let selectedRepetition = $state("0");
   let randomOffset = $state(0);
@@ -36,8 +108,6 @@
   );
   let sliderElement = $state<HTMLDivElement | null>(null);
   let animationFrame = $state<number | null>(null);
-
-  // Add a flag to track which transition curve to use
   let isResetting = $state(false);
 
   // Computed values
@@ -95,51 +165,36 @@
     animationFrame = requestAnimationFrame(trackPosition);
   }
 
-  async function runGameLoop() {
-    while (true) {
-      isResetting = false;
-      randomOffset = 0;
-
-      // Countdown state
-      gameState = "countdown";
-      for (let i = COUNTDOWN_SECONDS; i > 0; i--) {
-        countdownValue = i;
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-
-      // Rolling state
-      gameState = "rolling";
-      const randomNumber =
-        SQUARES[Math.floor(Math.random() * SQUARES.length)].number;
-      const randomRepetition = Math.floor(Math.random() * REPETITIONS);
-      randomOffset = (Math.random() - 0.5) * (BOX_WIDTH * 0.8);
-      selectedNumber = randomNumber.toString();
-      selectedRepetition = randomRepetition.toString();
-      startPositionTracking();
-
-      // Wait for animation to complete (5 seconds based on CSS transition)
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-
-      // Completed state
-      gameState = "completed";
-      await new Promise((resolve) =>
-        setTimeout(resolve, COMPLETED_WAIT_SECONDS * 1000)
-      );
-
-      // Reset to initial state with different curve
-      isResetting = true;
-      selectedNumber = "0";
-      selectedRepetition = "0";
-      centeredIndex = SQUARES.findIndex((square) => square.number === 0);
-
-      // Wait for reset animation to complete (2 seconds)
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+  function updateGameState(state: GameState, value?: number) {
+    gameState = state;
+    if (value !== undefined) {
+      countdownValue = value;
     }
   }
 
-  // Start the game loop when component mounts
+  function updateSelection(number: string, repetition: string, offset: number) {
+    isResetting = false;
+    selectedNumber = number;
+    selectedRepetition = repetition;
+    randomOffset = offset;
+    startPositionTracking();
+  }
+
+  function resetSelection() {
+    isResetting = true;
+    selectedNumber = "0";
+    selectedRepetition = "0";
+    centeredIndex = SQUARES.findIndex((square) => square.number === 0);
+    randomOffset = 0;
+  }
+
+  // Start the game loop
   $effect(() => {
-    runGameLoop();
+    GameController.runGameLoop(
+      updateGameState,
+      updateSelection,
+      resetSelection
+    );
 
     return () => {
       if (animationFrame) {
@@ -203,8 +258,8 @@
         bind:this={sliderElement}
         class="absolute flex space-x-2 h-full items-center"
         style="left: 50%; transform: {transform()}; transition: transform {isResetting
-          ? '500ms linear'
-          : '5000ms cubic-bezier(0.05, 0.7, 0, 1)'}; will-change: transform"
+          ? `${GAME_CONFIG.RESET_ANIMATION_DURATION}ms ${GAME_CONFIG.RESET_ANIMATION_CURVE}`
+          : `${GAME_CONFIG.ROLL_ANIMATION_DURATION}ms ${GAME_CONFIG.ROLL_ANIMATION_CURVE}`}; will-change: transform"
         ontransitionend={handleTransitionEnd}
       >
         {#each Array(REPETITIONS) as _, repIndex}
