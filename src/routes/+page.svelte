@@ -21,13 +21,24 @@
   const SPACING = 8;
   const BOX_TOTAL_WIDTH = BOX_WIDTH + SPACING;
 
+  // FSM States and configuration
+  type GameState = "countdown" | "rolling" | "completed";
+  const COUNTDOWN_SECONDS = 3;
+  const COMPLETED_WAIT_SECONDS = 2;
+
+  let gameState = $state<GameState>("countdown");
+  let countdownValue = $state(COUNTDOWN_SECONDS);
   let selectedNumber = $state("0");
   let selectedRepetition = $state("0");
+  let randomOffset = $state(0);
   let centeredIndex = $state(
     SQUARES.findIndex((square) => square.number === 0)
   );
   let sliderElement = $state<HTMLDivElement | null>(null);
   let animationFrame = $state<number | null>(null);
+
+  // Add a flag to track which transition curve to use
+  let isResetting = $state(false);
 
   // Computed values
   let selectedNumberAsInt = $derived(parseInt(selectedNumber) || 0);
@@ -36,9 +47,9 @@
     SQUARES.length * selectedRepetitionAsInt +
       SQUARES.findIndex((square) => square.number === selectedNumberAsInt)
   );
-  let transform = $derived(
-    `translateX(${-(selectedIndex * BOX_TOTAL_WIDTH) - BOX_WIDTH / 2}px)`
-  );
+  let transform = $derived(() => {
+    return `translateX(${-(selectedIndex * BOX_TOTAL_WIDTH) - BOX_WIDTH / 2 + (isResetting || gameState === "countdown" ? 0 : randomOffset)}px)`;
+  });
 
   function handleInputChange(e: Event): void {
     const input = e.target as HTMLInputElement;
@@ -84,8 +95,52 @@
     animationFrame = requestAnimationFrame(trackPosition);
   }
 
-  // Cleanup animation frame on component destroy
+  async function runGameLoop() {
+    while (true) {
+      isResetting = false;
+      randomOffset = 0;
+
+      // Countdown state
+      gameState = "countdown";
+      for (let i = COUNTDOWN_SECONDS; i > 0; i--) {
+        countdownValue = i;
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      // Rolling state
+      gameState = "rolling";
+      const randomNumber =
+        SQUARES[Math.floor(Math.random() * SQUARES.length)].number;
+      const randomRepetition = Math.floor(Math.random() * REPETITIONS);
+      randomOffset = (Math.random() - 0.5) * (BOX_WIDTH * 0.8);
+      selectedNumber = randomNumber.toString();
+      selectedRepetition = randomRepetition.toString();
+      startPositionTracking();
+
+      // Wait for animation to complete (5 seconds based on CSS transition)
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      // Completed state
+      gameState = "completed";
+      await new Promise((resolve) =>
+        setTimeout(resolve, COMPLETED_WAIT_SECONDS * 1000)
+      );
+
+      // Reset to initial state with different curve
+      isResetting = true;
+      selectedNumber = "0";
+      selectedRepetition = "0";
+      centeredIndex = SQUARES.findIndex((square) => square.number === 0);
+
+      // Wait for reset animation to complete (2 seconds)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+
+  // Start the game loop when component mounts
   $effect(() => {
+    runGameLoop();
+
     return () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
@@ -101,6 +156,16 @@
 </script>
 
 <div class="w-full p-4">
+  <div class="mb-4 text-center text-2xl font-bold">
+    {#if gameState === "countdown"}
+      Rolling in {countdownValue}...
+    {:else if gameState === "rolling"}
+      Rolling...
+    {:else}
+      Complete!
+    {/if}
+  </div>
+
   <div class="mb-4 flex gap-4">
     <div>
       <label for="numberInput" class="block text-sm font-medium mb-2">
@@ -137,7 +202,9 @@
       <div
         bind:this={sliderElement}
         class="absolute flex space-x-2 h-full items-center"
-        style="left: 50%; transform: {transform}; transition: transform 1000ms cubic-bezier(0.4, 0, 0.2, 1); will-change: transform"
+        style="left: 50%; transform: {transform()}; transition: transform {isResetting
+          ? '500ms linear'
+          : '5000ms cubic-bezier(0.05, 0.7, 0, 1)'}; will-change: transform"
         ontransitionend={handleTransitionEnd}
       >
         {#each Array(REPETITIONS) as _, repIndex}
