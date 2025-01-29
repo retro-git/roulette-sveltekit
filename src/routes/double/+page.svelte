@@ -231,7 +231,7 @@
         type="number"
         value={selectedNumber}
         onchange={handleInputChange}
-        class="border rounded px-3 py-2 w-24 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        class="border rounded-sm px-3 py-2 w-24 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       />
     </div>
     <div>
@@ -243,7 +243,7 @@
         type="number"
         value={selectedRepetition}
         onchange={handleInputChange}
-        class="border rounded px-3 py-2 w-24 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        class="border rounded-sm px-3 py-2 w-24 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       />
     </div>
   </div>
@@ -266,7 +266,7 @@
           {#each SQUARES as square, index}
             <div
               class="
-                flex-shrink-0
+                shrink-0
                 flex items-center justify-center
                 w-16 h-16 rounded-lg border-2 text-lg font-medium
                 {repIndex * SQUARES.length + index === centeredIndex
