@@ -210,7 +210,7 @@
   }
 </script>
 
-<div class="w-full p-4">
+<div class="w-full p-4 dark:bg-gray-800 dark:text-white">
   <div class="mb-4 text-center text-2xl font-bold">
     {#if gameState === "countdown"}
       Rolling in {countdownValue}...
@@ -223,7 +223,7 @@
 
   <div class="mb-4 flex gap-4">
     <div>
-      <label for="numberInput" class="block text-sm font-medium mb-2">
+      <label for="numberInput" class="block text-sm font-medium mb-2 dark:text-gray-300">
         Enter a number ({SQUARES.map((s) => s.number).join(", ")}):
       </label>
       <input
@@ -231,11 +231,11 @@
         type="number"
         value={selectedNumber}
         onchange={handleInputChange}
-        class="border rounded px-3 py-2 w-24"
+        class="border rounded px-3 py-2 w-24 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       />
     </div>
     <div>
-      <label for="repetitionInput" class="block text-sm font-medium mb-2">
+      <label for="repetitionInput" class="block text-sm font-medium mb-2 dark:text-gray-300">
         Enter repetition (0-{REPETITIONS - 1}):
       </label>
       <input
@@ -243,14 +243,14 @@
         type="number"
         value={selectedRepetition}
         onchange={handleInputChange}
-        class="border rounded px-3 py-2 w-24"
+        class="border rounded px-3 py-2 w-24 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
       />
     </div>
   </div>
 
-  <div class="relative w-full h-24 bg-gray-50">
+  <div class="relative w-full h-24 bg-gray-50 dark:bg-gray-900">
     <div
-      class="absolute left-1/2 top-0 h-full w-0 border-l-2 border-blue-400 -translate-x-1/2"
+      class="absolute left-1/2 top-0 h-full w-0 border-l-2 border-blue-400 dark:border-blue-500 -translate-x-1/2"
     ></div>
 
     <div class="absolute w-full h-full overflow-hidden">
@@ -271,7 +271,7 @@
                 w-16 h-16 rounded-lg border-2 text-lg font-medium
                 {repIndex * SQUARES.length + index === centeredIndex
                 ? 'border-blue-500'
-                : 'border-gray-300'}
+                : 'border-gray-300 dark:border-gray-600'}
               "
               style:background-color={repIndex * SQUARES.length + index ===
               centeredIndex
