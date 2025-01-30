@@ -250,7 +250,7 @@
 
   <div class="relative w-full h-24 bg-background-secondary">
     <div
-      class="absolute left-1/2 top-0 h-full w-0 border-l-2 border-primary -translate-x-1/2"
+      class="absolute left-1/2 top-0 h-full w-0 border-l-2 border-center-bar -translate-x-1/2 z-10"
     ></div>
 
     <div class="absolute w-full h-full overflow-hidden">
