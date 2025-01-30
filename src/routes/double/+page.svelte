@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ChatRoom from "$lib/components/ChatRoom.svelte";
   // Define types
   interface Square {
     number: number;
@@ -211,78 +212,88 @@
 </script>
 
 <div class="w-full p-4 bg-background text-text">
-  <div class="mb-4 text-center text-2xl font-bold">
-    {#if gameState === "countdown"}
-      Rolling in {countdownValue}...
-    {:else if gameState === "rolling"}
-      Rolling...
-    {:else}
-      Complete!
-    {/if}
-  </div>
-
-  <div class="mb-4 flex gap-4">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Game section -->
     <div>
-      <label for="numberInput" class="block text-sm font-medium mb-2 text-text-secondary">
-        Enter a number ({SQUARES.map((s) => s.number).join(", ")}):
-      </label>
-      <input
-        id="numberInput"
-        type="number"
-        value={selectedNumber}
-        onchange={handleInputChange}
-        class="border rounded-sm px-3 py-2 w-24 bg-background-secondary text-text border-secondary"
-      />
-    </div>
-    <div>
-      <label for="repetitionInput" class="block text-sm font-medium mb-2 text-text-secondary">
-        Enter repetition (0-{REPETITIONS - 1}):
-      </label>
-      <input
-        id="repetitionInput"
-        type="number"
-        value={selectedRepetition}
-        onchange={handleInputChange}
-        class="border rounded-sm px-3 py-2 w-24 bg-background-secondary text-text border-secondary"
-      />
-    </div>
-  </div>
-
-  <div class="relative w-full h-24 bg-background-secondary">
-    <div
-      class="absolute left-1/2 top-0 h-full w-0 border-l-2 border-center-bar -translate-x-1/2 z-10"
-    ></div>
-
-    <div class="absolute w-full h-full overflow-hidden">
-      <div
-        bind:this={sliderElement}
-        class="absolute flex space-x-2 h-full items-center"
-        style="left: 50%; transform: {transform()}; transition: transform {isResetting
-          ? `${GAME_CONFIG.RESET_ANIMATION_DURATION}ms ${GAME_CONFIG.RESET_ANIMATION_CURVE}`
-          : `${GAME_CONFIG.ROLL_ANIMATION_DURATION}ms ${GAME_CONFIG.ROLL_ANIMATION_CURVE}`}; will-change: transform"
-        ontransitionend={handleTransitionEnd}
-      >
-        {#each Array(REPETITIONS) as _, repIndex}
-          {#each SQUARES as square, index}
-            <div
-              class="
-                shrink-0
-                flex items-center justify-center
-                w-16 h-16 rounded-lg border-2 text-lg font-medium
-                {repIndex * SQUARES.length + index === centeredIndex
-                ? 'border-primary'
-                : 'border-secondary'}
-              "
-              style:background-color={repIndex * SQUARES.length + index ===
-              centeredIndex
-                ? square.color + "40"
-                : square.color + "20"}
-            >
-              {square.number}
-            </div>
-          {/each}
-        {/each}
+      <div class="mb-4 text-center text-2xl font-bold">
+        {#if gameState === "countdown"}
+          Rolling in {countdownValue}...
+        {:else if gameState === "rolling"}
+          Rolling...
+        {:else}
+          Complete!
+        {/if}
       </div>
+
+      <div class="mb-4 flex gap-4">
+        <div>
+          <label for="numberInput" class="block text-sm font-medium mb-2 text-text-secondary">
+            Enter a number ({SQUARES.map((s) => s.number).join(", ")}):
+          </label>
+          <input
+            id="numberInput"
+            type="number"
+            value={selectedNumber}
+            onchange={handleInputChange}
+            class="border rounded-sm px-3 py-2 w-24 bg-background-secondary text-text border-secondary"
+          />
+        </div>
+        <div>
+          <label for="repetitionInput" class="block text-sm font-medium mb-2 text-text-secondary">
+            Enter repetition (0-{REPETITIONS - 1}):
+          </label>
+          <input
+            id="repetitionInput"
+            type="number"
+            value={selectedRepetition}
+            onchange={handleInputChange}
+            class="border rounded-sm px-3 py-2 w-24 bg-background-secondary text-text border-secondary"
+          />
+        </div>
+      </div>
+
+      <div class="relative w-full h-24 bg-background-secondary">
+        <div
+          class="absolute left-1/2 top-0 h-full w-0 border-l-2 border-center-bar -translate-x-1/2 z-10"
+        ></div>
+
+        <div class="absolute w-full h-full overflow-hidden">
+          <div
+            bind:this={sliderElement}
+            class="absolute flex space-x-2 h-full items-center"
+            style="left: 50%; transform: {transform()}; transition: transform {isResetting
+              ? `${GAME_CONFIG.RESET_ANIMATION_DURATION}ms ${GAME_CONFIG.RESET_ANIMATION_CURVE}`
+              : `${GAME_CONFIG.ROLL_ANIMATION_DURATION}ms ${GAME_CONFIG.ROLL_ANIMATION_CURVE}`}; will-change: transform"
+            ontransitionend={handleTransitionEnd}
+          >
+            {#each Array(REPETITIONS) as _, repIndex}
+              {#each SQUARES as square, index}
+                <div
+                  class="
+                    shrink-0
+                    flex items-center justify-center
+                    w-16 h-16 rounded-lg border-2 text-lg font-medium
+                    {repIndex * SQUARES.length + index === centeredIndex
+                    ? 'border-primary'
+                    : 'border-secondary'}
+                  "
+                  style:background-color={repIndex * SQUARES.length + index ===
+                  centeredIndex
+                    ? square.color + "40"
+                    : square.color + "20"}
+                >
+                  {square.number}
+                </div>
+              {/each}
+            {/each}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat section -->
+    <div>
+      <ChatRoom />
     </div>
   </div>
 </div>
