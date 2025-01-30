@@ -5,10 +5,10 @@
 	let { children } = $props();
 </script>
 
-<div class="min-h-screen bg-[var(--color-background)] text-[var(--color-text)]">
+<div class="min-h-screen bg-background text-text">
 	<Navbar />
 
-	<main class="max-w-[var(--container-max)] mx-auto px-4 py-8">
+	<main class="max-w-max mx-auto px-4 py-8">
 		{@render children()}
 	</main>
 </div>
