@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
 
   type NavItem = {
     href: string;
@@ -17,6 +18,7 @@
   ];
 
   let currentPath = $derived(page.url.pathname);
+  let { data: { session, supabase } } = $derived(page);
 
   function setDarkMode(value: boolean) {
     isDark = value;
@@ -31,6 +33,16 @@
   function toggleDarkMode() {
     setDarkMode(!isDark);
   }
+
+  const handleAuth = async () => {
+    if (session) {
+      const { error } = await supabase.auth.signOut();
+      if (error) console.error(error);
+      await goto('/auth');
+    } else {
+      await goto('/auth');
+    }
+  };
 
   onMount(() => {
     // Only add listener for system preference changes
@@ -65,6 +77,13 @@
           </a>
         {/each}
         
+        <button
+          onclick={handleAuth}
+          class="ml-4 px-3 py-2 rounded-md text-sm font-medium text-text-secondary hover:bg-secondary hover:text-text"
+        >
+          {session ? 'Logout' : 'Login'}
+        </button>
+
         <!-- Dark mode toggle button -->
         <button
           onclick={toggleDarkMode}
