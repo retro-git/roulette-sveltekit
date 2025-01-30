@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/state';
+  import { browser } from '$app/environment';
 
   type NavItem = {
     href: string;
@@ -8,7 +9,7 @@
   };
 
   let isOpen = $state(false);
-  let isDark = $state(false);
+  let isDark = $state(browser ? document.documentElement.classList.contains('dark') : false);
   
   const navItems: NavItem[] = [
     { href: '/', label: 'Home' },
@@ -32,31 +33,20 @@
   }
 
   onMount(() => {
-    // Check localStorage first
-    const savedTheme = localStorage.getItem('theme');
-    
-    if (savedTheme) {
-      // Use saved preference if it exists
-      setDarkMode(savedTheme === 'dark');
-    } else {
-      // Otherwise check system preference
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      setDarkMode(mediaQuery.matches);
-
-      // Listen for system preference changes
-      mediaQuery.addEventListener('change', (e) => {
-        setDarkMode(e.matches);
-      });
-    }
+    // Only add listener for system preference changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', (e) => {
+      setDarkMode(e.matches);
+    });
   });
 </script>
 
-<nav class="bg-white dark:bg-gray-800 shadow-lg">
+<nav class="bg-background shadow-lg">
   <div class="max-w-7xl mx-auto px-4">
     <div class="flex justify-between h-16">
       <div class="flex items-center">
         <a href="/" class="flex items-center">
-          <span class="text-xl font-bold text-gray-800 dark:text-white">MyApp</span>
+          <span class="text-xl font-bold text-text">MyApp</span>
         </a>
       </div>
 
@@ -67,8 +57,8 @@
             href={item.href}
             class={`px-3 py-2 rounded-md text-sm font-medium ${
               currentPath === item.href 
-                ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white' 
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                ? 'bg-secondary text-text' 
+                : 'text-text-secondary hover:bg-secondary hover:text-text'
             }`}
           >
             {item.label}
@@ -78,8 +68,7 @@
         <!-- Dark mode toggle button -->
         <button
           onclick={toggleDarkMode}
-          class="ml-4 p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 
-            dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-hidden"
+          class="ml-4 p-2 rounded-md text-text-secondary hover:text-text hover:bg-secondary focus:outline-hidden"
           aria-label="Toggle dark mode"
         >
           {#if isDark}
@@ -104,8 +93,8 @@
       <div class="flex items-center sm:hidden">
         <button
           onclick={() => isOpen = !isOpen}
-          class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 
-            hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 focus:outline-hidden"
+          class="inline-flex items-center justify-center p-2 rounded-md text-text-secondary 
+            hover:text-text hover:bg-secondary focus:outline-hidden"
           aria-expanded={isOpen}
         >
           <span class="sr-only">{isOpen ? 'Close menu' : 'Open menu'}</span>
@@ -143,8 +132,8 @@
             href={item.href}
             class={`block px-3 py-2 rounded-md text-base font-medium ${
               currentPath === item.href
-                ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                ? 'bg-secondary text-text'
+                : 'text-text-secondary hover:bg-secondary hover:text-text'
             }`}
           >
             {item.label}
@@ -154,9 +143,8 @@
         <!-- Dark mode toggle button (mobile) -->
         <button
           onclick={toggleDarkMode}
-          class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-600 
-            hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 
-            dark:hover:text-white"
+          class="w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary 
+            hover:bg-secondary hover:text-text"
         >
           <div class="flex items-center">
             {#if isDark}

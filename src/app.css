@@ -2,6 +2,41 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  /* Light theme colors */
+  --color-primary: oklch(0.98 0.02 250);
+  --color-secondary: oklch(0.95 0.02 250);
+  --color-text: oklch(0.2 0.02 250);
+  --color-text-secondary: oklch(0.4 0.02 250);
+  --color-background: oklch(1 0 0);
+  --color-background-secondary: oklch(0.98 0.01 250);
+  
+  /* Dark theme colors */
+  --color-primary-dark: oklch(0.8 0.02 250);
+  --color-secondary-dark: oklch(0.7 0.02 250);
+  --color-text-dark: oklch(0.98 0.02 250);
+  --color-text-secondary-dark: oklch(0.8 0.02 250);
+  --color-background-dark: oklch(0.2 0.02 250);
+  --color-background-secondary-dark: oklch(0.2 0.02 250);
+  
+  /* Layout */
+  --nav-height: 4rem;
+  --container-max: 80rem;
+  
+  /* Animation */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Apply dark theme colors using CSS selector */
+:where(.dark, .dark *) {
+  --color-primary: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary-dark);
+  --color-text: var(--color-text-dark);
+  --color-text-secondary: var(--color-text-secondary-dark);
+  --color-background: var(--color-background-dark);
+  --color-background-secondary: var(--color-background-secondary-dark);
+}
+
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
