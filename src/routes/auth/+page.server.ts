@@ -13,7 +13,7 @@ export const actions: Actions = {
       console.error(error)
       redirect(303, '/auth/error')
     } else {
-      redirect(303, '/')
+      redirect(303, '/double')
     }
   },
   login: async ({ request, locals: { supabase } }) => {
@@ -26,7 +26,22 @@ export const actions: Actions = {
       console.error(error)
       redirect(303, '/auth/error')
     } else {
-      redirect(303, '/private')
+      redirect(303, '/double')
     }
+  },
+  discord: async ({ locals: { supabase } }) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: {
+        redirectTo: `${process.env.PUBLIC_SITE_URL}/auth/confirm`
+      }
+    })
+    
+    if (error) {
+      console.error(error)
+      throw redirect(303, '/auth/error')
+    }
+    
+    throw redirect(303, data.url)
   },
 }
